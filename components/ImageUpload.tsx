@@ -8,18 +8,26 @@ interface ImageUploadProps {
   maxImages?: number;
 }
 
+interface ImageData {
+  preview: string; // base64 for display
+  path: string;    // actual path to store in DB
+}
+
 export default function ImageUpload({ onImagesChange, maxImages = 4 }: ImageUploadProps) {
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<ImageData[]>([]);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const convertFileToBase64 = (file: File): Promise<string> => {
+  const convertFileToPreview = (file: File): Promise<ImageData> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
         const result = reader.result as string;
-        // Store as base64 data URL for display
-        resolve(result);
+        // Use base64 for preview, but store simple path in DB
+        resolve({
+          preview: result,
+          path: `/products/${file.name}`
+        });
       };
       reader.onerror = reject;
       reader.readAsDataURL(file);
@@ -34,10 +42,11 @@ export default function ImageUpload({ onImagesChange, maxImages = 4 }: ImageUplo
     for (const file of filesToProcess) {
       if (file.type.startsWith("image/")) {
         try {
-          const base64 = await convertFileToBase64(file);
+          const imageData = await convertFileToPreview(file);
           setImages(prev => {
-            const updated = [...prev, base64];
-            onImagesChange(updated);
+            const updated = [...prev, imageData];
+            // Send only paths to parent, not base64
+            onImagesChange(updated.map(img => img.path));
             return updated;
           });
         } catch (error) {
@@ -76,7 +85,8 @@ export default function ImageUpload({ onImagesChange, maxImages = 4 }: ImageUplo
   const removeImage = (index: number) => {
     const updated = images.filter((_, i) => i !== index);
     setImages(updated);
-    onImagesChange(updated);
+    // Send only paths to parent
+    onImagesChange(updated.map(img => img.path));
   };
 
   const handleClick = () => {
@@ -129,10 +139,10 @@ export default function ImageUpload({ onImagesChange, maxImages = 4 }: ImageUplo
       {/* Image Preview Grid - Uniform Frame Sizes */}
       {images.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {images.map((image, index) => (
+          {images.map((imageData, index) => (
             <div key={index} className="relative group rounded-lg overflow-hidden border-2 border-gray-300 bg-gray-100 aspect-square shadow-md hover:shadow-lg transition">
               <img
-                src={image}
+                src={imageData.preview}
                 alt={`Preview ${index + 1}`}
                 className="w-full h-full object-cover"
               />
