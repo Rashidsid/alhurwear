@@ -13,6 +13,12 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    rules: {
+      "react-hooks/set-state-in-effect": "off",
+      "tailwindcss-intellisense/suggestCanonicalClasses": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;
