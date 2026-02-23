@@ -11,16 +11,13 @@ import { useUser } from "./context/UserContext";
 const heroImage = "/assets/hero.jpg";
 
 interface Product {
-  id: number;
+  id: string;
   name: string;
   category: string;
   price: number;
-  color: string;
+  original_price?: number;
   description: string;
   stock: number;
-  is_hot_selling: boolean;
-  is_new_arrival: boolean;
-  is_top_viewed: boolean;
   images: string[];
 }
 
@@ -55,9 +52,6 @@ export default function Home() {
 
   const filteredProducts = products.filter(product => {
     if (selectedCategory !== "all" && product.category !== selectedCategory) return false;
-    if (selectedBadge === "hot-selling" && !product.is_hot_selling) return false;
-    if (selectedBadge === "new-arrival" && !product.is_new_arrival) return false;
-    if (selectedBadge === "top-viewed" && !product.is_top_viewed) return false;
     return true;
   });
 
@@ -323,53 +317,7 @@ export default function Home() {
                 ))}
               </div>
             </div>
-
-            {/* Badge Filter */}
-            <div>
-              <h3 className="text-sm font-semibold mb-3 text-slate-700">Special Collections</h3>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => setSelectedBadge("all")}
-                  className={`px-4 py-2 rounded-full transition font-medium ${
-                    selectedBadge === "all"
-                      ? "bg-purple-600 text-white"
-                      : "bg-slate-100 text-slate-900 hover:bg-slate-200"
-                  }`}
-                >
-                  All Items
-                </button>
-                <button
-                  onClick={() => setSelectedBadge("hot-selling")}
-                  className={`px-4 py-2 rounded-full transition font-medium ${
-                    selectedBadge === "hot-selling"
-                      ? "bg-red-600 text-white"
-                      : "bg-slate-100 text-slate-900 hover:bg-slate-200"
-                  }`}
-                >
-                  🔥 Hot Selling
-                </button>
-                <button
-                  onClick={() => setSelectedBadge("new-arrival")}
-                  className={`px-4 py-2 rounded-full transition font-medium ${
-                    selectedBadge === "new-arrival"
-                      ? "bg-green-600 text-white"
-                      : "bg-slate-100 text-slate-900 hover:bg-slate-200"
-                  }`}
-                >
-                  ✨ New Arrivals
-                </button>
-                <button
-                  onClick={() => setSelectedBadge("top-viewed")}
-                  className={`px-4 py-2 rounded-full transition font-medium ${
-                    selectedBadge === "top-viewed"
-                      ? "bg-blue-600 text-white"
-                      : "bg-slate-100 text-slate-900 hover:bg-slate-200"
-                  }`}
-                >
-                  ⭐ Top Viewed
-                </button>
-              </div>
-            </div>
+            {/* Badge Filter - Removed as these fields don't exist in database */}
           </div>
 
           {/* Products Grid */}
@@ -403,23 +351,9 @@ export default function Home() {
                       </div>
                     )}
 
-                    {/* Badges */}
+                    {/* Badges - Removed as these fields don't exist in database */}
                     <div className="absolute top-3 left-3 right-3 flex flex-wrap gap-2">
-                      {product.is_hot_selling && (
-                        <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
-                          🔥 HOT SALE
-                        </span>
-                      )}
-                      {product.is_new_arrival && (
-                        <span className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
-                          ✨ NEW
-                        </span>
-                      )}
-                      {product.is_top_viewed && (
-                        <span className="bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">
-                          ⭐ TOP
-                        </span>
-                      )}
+                      {/* Product badges would go here */}
                     </div>
                   </div>
 
@@ -444,7 +378,7 @@ export default function Home() {
                       </div>
                       <button
                         onClick={() => addToCart({
-                          id: product.id,
+                          id: typeof product.id === 'string' ? parseInt(product.id) : product.id,
                           name: product.name,
                           price: product.price,
                           image: product.images?.[0] || "/assets/placeholder.jpg",

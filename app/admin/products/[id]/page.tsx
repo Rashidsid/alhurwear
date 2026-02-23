@@ -6,17 +6,14 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import Link from "next/link";
 
 interface Product {
-  id: number;
+  id: string;
   name: string;
   category: string;
   price: number;
-  color: string;
+  original_price?: number;
   description: string;
   stock: number;
   images?: string[];
-  is_hot_selling?: boolean;
-  is_new_arrival?: boolean;
-  is_top_viewed?: boolean;
 }
 
 export default function EditProduct() {
@@ -27,17 +24,14 @@ export default function EditProduct() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<Product>({
-    id: 0,
+    id: "",
     name: "",
     category: "sunglasses",
     price: 0,
-    color: "",
+    original_price: 0,
     description: "",
     stock: 0,
     images: [""],
-    is_hot_selling: false,
-    is_new_arrival: false,
-    is_top_viewed: false,
   });
 
   useEffect(() => {
@@ -203,14 +197,14 @@ export default function EditProduct() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Color
+                Original Price (NPR)
               </label>
               <input
-                type="text"
-                name="color"
-                value={formData.color}
+                type="number"
+                name="original_price"
+                value={formData.original_price || ""}
                 onChange={handleChange}
-                placeholder="e.g., Black, Blue"
+                placeholder="0.00"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
               />
             </div>
@@ -256,36 +250,7 @@ export default function EditProduct() {
               Product Badges
             </label>
             <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="is_hot_selling"
-                  checked={formData.is_hot_selling || false}
-                  onChange={handleCheckboxChange}
-                  className="w-4 h-4 text-red-600 rounded"
-                />
-                <span className="text-sm font-medium text-gray-700">🔥 Hot Selling</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="is_new_arrival"
-                  checked={formData.is_new_arrival || false}
-                  onChange={handleCheckboxChange}
-                  className="w-4 h-4 text-green-600 rounded"
-                />
-                <span className="text-sm font-medium text-gray-700">✨ New Arrival</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="is_top_viewed"
-                  checked={formData.is_top_viewed || false}
-                  onChange={handleCheckboxChange}
-                  className="w-4 h-4 text-blue-600 rounded"
-                />
-                <span className="text-sm font-medium text-gray-700">⭐ Top Viewed</span>
-              </label>
+              {/* Product badges removed - not in database schema */}
             </div>
           </div>
 

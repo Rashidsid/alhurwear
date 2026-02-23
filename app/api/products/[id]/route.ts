@@ -2,16 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
 interface Product {
-  id: number;
+  id: string;
   name: string;
   category: string;
   price: number;
-  color: string;
+  original_price?: number;
   description: string;
   stock: number;
-  is_hot_selling?: boolean;
-  is_new_arrival?: boolean;
-  is_top_viewed?: boolean;
+  status: string;
 }
 
 interface ProductImage {
@@ -25,23 +23,30 @@ export async function GET(
   try {
     const { id } = await params;
     const connection = await pool.getConnection();
+    
     const [products] = await connection.query(
-      'SELECT * FROM products WHERE id = ?',
+      'SELECT id, name, category, price, original_price, description, stock, status, created_at FROM products WHERE id = ? AND status = "active"',
       [id]
     );
+    
     const [images] = await connection.query(
-      'SELECT image_url FROM product_images WHERE product_id = ? ORDER BY is_main DESC',
+      'SELECT image_url FROM product_images WHERE product_id = ? ORDER BY display_order ASC',
       [id]
     );
+    
     connection.release();
 
-    if ((products as Product[]).length === 0) {
+    if (!Array.isArray(products) || (products as Product[]).length === 0) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
     return NextResponse.json({
       ...(products as Product[])[0],
       images: (images as ProductImage[]).map(img => img.image_url),
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+      },
     });
   } catch (error) {
     console.error('Error fetching product:', error);
@@ -55,24 +60,32 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const body = await request.json() as { name: string; category: string; price: number; color: string; description: string; stock: number; images: string[]; is_hot_selling?: boolean; is_new_arrival?: boolean; is_top_viewed?: boolean };
-    const { name, category, price, color, description, stock, images, is_hot_selling, is_new_arrival, is_top_viewed } = body;
+    const body = await request.json() as { 
+      name: string
+      category: string
+      price: number
+      original_price?: number
+      description: string
+      stock: number
+      images?: string[]
+    };
+    const { name, category, price, original_price, description, stock, images } = body;
 
     const connection = await pool.getConnection();
     
     await connection.query(
-      'UPDATE products SET name = ?, category = ?, price = ?, color = ?, description = ?, stock = ?, is_hot_selling = ?, is_new_arrival = ?, is_top_viewed = ? WHERE id = ?',
-      [name, category, price, color, description, stock, is_hot_selling || false, is_new_arrival || false, is_top_viewed || false, id]
+      'UPDATE products SET name = ?, category = ?, price = ?, original_price = ?, description = ?, stock = ? WHERE id = ?',
+      [name, category, Math.round(price), original_price || price, description, Math.round(stock), id]
     );
 
-    // Update images
-    await connection.query('DELETE FROM product_images WHERE product_id = ?', [id]);
-    
+    // Update images if provided
     if (images && images.length > 0) {
+      await connection.query('DELETE FROM product_images WHERE product_id = ?', [id]);
+      
       for (let i = 0; i < images.length; i++) {
         await connection.query(
-          'INSERT INTO product_images (product_id, image_url, is_main) VALUES (?, ?, ?)',
-          [id, images[i], i === 0]
+          'INSERT INTO product_images (product_id, image_url, display_order) VALUES (?, ?, ?)',
+          [id, images[i], i + 1]
         );
       }
     }
@@ -93,7 +106,13 @@ export async function DELETE(
   try {
     const { id } = await params;
     const connection = await pool.getConnection();
-    await connection.query('DELETE FROM products WHERE id = ?', [id]);
+    
+    // Delete images first
+    await connection.query('DELETE FROM product_images WHERE product_id = ?', [id]);
+    
+    // Delete product
+    await connection.query('UPDATE products SET status = "inactive" WHERE id = ?', [id]);
+    
     connection.release();
 
     return NextResponse.json({ message: 'Product deleted successfully' });

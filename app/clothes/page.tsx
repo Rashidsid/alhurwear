@@ -4,16 +4,36 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useCart } from "../context/CartContext";
+import { useState, useEffect } from "react";
 
-const clothes = [
-  { id: 101, name: "Premium Cotton T-Shirt", price: "NPR 49.99", image: "/products/clothes/1.jpg" },
-  { id: 102, name: "Designer Denim Jacket", price: "NPR 189.99", image: "/products/clothes/2.jpg" },
-  { id: 103, name: "Black Angora Wool Sweatshirt", price: "NPR 2500", image: "/products/clothes/3.jpg" },
-  { id: 104, name: "Slim Fit Chinos", price: "NPR 89.99", image: "/products/clothes/4.jpg" },
-];
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  images: string[];
+  category: string;
+}
 
 export default function Clothes() {
   const { setIsOpen, cart } = useCart();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch("/api/products?category=clothes");
+        const data = await response.json();
+        setProducts(data);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   return (
     <div className="min-h-screen bg-white text-slate-900 px-4 py-6 max-w-6xl mx-auto">
@@ -21,9 +41,9 @@ export default function Clothes() {
       {/* Navbar */}
       <header className="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-slate-100">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <motion.div className="text-2xl font-bold tracking-tight">
+          <Link href="/" className="text-2xl font-bold tracking-tight">
             Alhur<span className="text-blue-600">wear</span>
-          </motion.div>
+          </Link>
 
           <motion.div className="flex items-center gap-4 text-xl">
             <button
@@ -47,28 +67,45 @@ export default function Clothes() {
         Browse our collection of premium clothes
       </p>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-8">
-        {clothes.map((p, i) => (
-          <Link key={p.id} href={`/product/${p.id}`}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: i * 0.1 }}
-              className="rounded-xl p-2 border shadow hover:shadow-lg cursor-pointer overflow-hidden"
-            >
-              <Image
-                src={p.image}
-                alt={p.name}
-                width={300}
-                height={300}
-                className="rounded-lg object-cover h-40 w-full"
-              />
-              <h3 className="mt-2 font-medium">{p.name}</h3>
-              <p className="text-blue-600 font-semibold mt-1">{p.price}</p>
-            </motion.div>
-          </Link>
-        ))}
-      </div>
+      {loading ? (
+        <div className="flex justify-center items-center py-12">
+          <p className="text-slate-600">Loading products...</p>
+        </div>
+      ) : products.length === 0 ? (
+        <div className="flex justify-center items-center py-12">
+          <p className="text-slate-600">No products available</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-8">
+          {products.map((p, i) => (
+            <Link key={p.id} href={`/product/${p.id}`}>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: i * 0.05 }}
+                className="rounded-xl p-2 border shadow hover:shadow-lg cursor-pointer overflow-hidden h-full flex flex-col"
+              >
+                <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-gray-200">
+                  {p.images && p.images.length > 0 ? (
+                    <Image
+                      src={p.images[0]}
+                      alt={p.name}
+                      fill
+                      className="object-cover hover:scale-105 transition duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-300 text-gray-600">
+                      No Image
+                    </div>
+                  )}
+                </div>
+                <h3 className="mt-2 font-medium text-sm line-clamp-2">{p.name}</h3>
+                <p className="text-blue-600 font-semibold mt-1">NPR {p.price.toFixed(2)}</p>
+              </motion.div>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

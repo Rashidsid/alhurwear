@@ -6,14 +6,13 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import Link from "next/link";
 
 interface Product {
-  id: number;
+  id: string;
   name: string;
   category: string;
   price: number;
+  original_price?: number;
   stock: number;
-  is_hot_selling?: boolean;
-  is_new_arrival?: boolean;
-  is_top_viewed?: boolean;
+  status?: string;
 }
 
 export default function AdminProducts() {
@@ -52,7 +51,7 @@ export default function AdminProducts() {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this product?")) {
       try {
         const response = await fetch(`/api/products/${id}`, {
@@ -72,35 +71,29 @@ export default function AdminProducts() {
     }
   };
 
-  const toggleBadge = async (productId: number, badgeType: 'hot_selling' | 'new_arrival' | 'top_viewed') => {
-    try {
-      const product = products.find(p => p.id === productId);
-      if (!product) return;
-
-      const currentValue = product[`is_${badgeType}` as keyof Product];
-      const response = await fetch(`/api/products/${productId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...product,
-          [`is_${badgeType}`]: !currentValue
-        })
-      });
-
-      if (response.ok) {
-        setProducts(products.map(p => 
-          p.id === productId 
-            ? { ...p, [`is_${badgeType}`]: !currentValue }
-            : p
-        ));
-      } else {
-        alert("Failed to update product");
-      }
-    } catch (error) {
-      console.error("Error updating product:", error);
-      alert("Error updating product");
+  useEffect(() => {
+    const token = localStorage.getItem("adminToken");
+    if (!token) {
+      router.push("/admin/login");
+      return;
     }
-  };
+
+    // Fetch products
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch("/api/products");
+        const data = await response.json();
+        setProducts(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        setError("Failed to load products");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [router]);
 
   return (
     <AdminLayout>
@@ -153,39 +146,7 @@ export default function AdminProducts() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap gap-2">
-                        <button
-                          onClick={() => toggleBadge(product.id, 'hot_selling')}
-                          className={`px-2 py-1 text-xs rounded font-semibold transition ${
-                            product.is_hot_selling
-                              ? 'bg-red-500 text-white'
-                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                          }`}
-                          title="Toggle Hot Selling"
-                        >
-                          🔥 Hot
-                        </button>
-                        <button
-                          onClick={() => toggleBadge(product.id, 'new_arrival')}
-                          className={`px-2 py-1 text-xs rounded font-semibold transition ${
-                            product.is_new_arrival
-                              ? 'bg-green-500 text-white'
-                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                          }`}
-                          title="Toggle New Arrival"
-                        >
-                          ✨ New
-                        </button>
-                        <button
-                          onClick={() => toggleBadge(product.id, 'top_viewed')}
-                          className={`px-2 py-1 text-xs rounded font-semibold transition ${
-                            product.is_top_viewed
-                              ? 'bg-blue-500 text-white'
-                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                          }`}
-                          title="Toggle Top Viewed"
-                        >
-                          ⭐ Top
-                        </button>
+                        {/* Badge toggles removed - not in database schema */}
                       </div>
                     </td>
                     <td className="px-6 py-4">

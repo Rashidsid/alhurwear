@@ -18,10 +18,10 @@ export async function GET(request: NextRequest) {
 
     let query = `SELECT c.id, c.name, c.email, c.phone, c.address, c.created_at,
                  COUNT(o.id) as total_orders,
-                 COALESCE(SUM(o.total_amount), 0) as total_spent,
+                 COALESCE(SUM(o.total), 0) as total_spent,
                  MAX(o.created_at) as last_order_date
                  FROM customers c
-                 LEFT JOIN orders o ON c.id = o.customer_id`;
+                 LEFT JOIN orders o ON c.id = o.user_id`;
 
     const params: string[] = [];
 

@@ -8,16 +8,13 @@ import { motion } from "framer-motion";
 import { useCart } from "@/app/context/CartContext";
 
 interface Product {
-  id: number;
+  id: string;
   name: string;
   category: string;
   price: number;
-  color: string;
+  original_price?: number;
   description: string;
   stock: number;
-  is_hot_selling: boolean;
-  is_new_arrival: boolean;
-  is_top_viewed: boolean;
   images: string[];
 }
 
@@ -39,7 +36,6 @@ export default function ProductDetail() {
         const response = await fetch(`/api/products/${productId}`);
         const data = await response.json();
         setProduct(data);
-        setSelectedColor(data.color);
         if (data.images && data.images.length > 0) {
           setMainImage(data.images[0]);
         }
@@ -85,7 +81,7 @@ export default function ProductDetail() {
 
   const handleAddToCart = () => {
     addToCart({
-      id: product.id,
+      id: typeof product.id === 'string' ? parseInt(product.id) : product.id,
       name: product.name,
       price: product.price,
       image: mainImage || "/assets/placeholder.jpg",
@@ -159,23 +155,9 @@ export default function ProductDetail() {
             animate={{ opacity: 1, x: 0 }}
             className="space-y-6"
           >
-            {/* Badges */}
+            {/* Badges - Removed as these fields don't exist in database */}
             <div className="flex flex-wrap gap-2">
-              {product.is_hot_selling && (
-                <span className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded">
-                  🔥 HOT SALE
-                </span>
-              )}
-              {product.is_new_arrival && (
-                <span className="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded">
-                  ✨ NEW
-                </span>
-              )}
-              {product.is_top_viewed && (
-                <span className="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded">
-                  ⭐ TOP
-                </span>
-              )}
+              {/* Product badges would go here */}
             </div>
 
             {/* Title & Price */}
@@ -288,7 +270,7 @@ export default function ProductDetail() {
             <div className="border-t pt-6 space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-slate-600">SKU:</span>
-                <span className="font-medium">ALH-{product.id}-{product.color.substring(0, 3).toUpperCase()}</span>
+                <span className="font-medium">ALH-{product.id}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-600">Category:</span>
