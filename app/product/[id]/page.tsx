@@ -116,33 +116,36 @@ export default function ProductDetail() {
             animate={{ opacity: 1, x: 0 }}
             className="space-y-4"
           >
-            <div className="relative bg-slate-100 rounded-lg overflow-hidden h-96">
-              <Image
+            {/* Main Image - Fixed Frame Size */}
+            <div className="relative bg-gray-200 rounded-lg overflow-hidden aspect-square w-full max-w-md mx-auto">
+              <img
                 src={mainImage || "/assets/placeholder.jpg"}
                 alt={product.name}
-                fill
-                className="object-cover"
+                className="w-full h-full object-cover"
               />
             </div>
 
+            {/* Image Thumbnails - Uniform Grid */}
             {product.images && product.images.length > 1 && (
-              <div className="flex gap-3">
+              <div className="flex gap-3 justify-center md:justify-start flex-wrap">
                 {product.images.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => setMainImage(img)}
-                    className={`relative w-20 h-20 rounded border-2 overflow-hidden ${
+                    className={`relative w-24 h-24 rounded-lg border-2 overflow-hidden transition transform hover:scale-105 ${
                       mainImage === img
-                        ? "border-blue-600"
-                        : "border-slate-200"
+                        ? "border-blue-600 shadow-lg"
+                        : "border-gray-300 hover:border-gray-400"
                     }`}
                   >
-                    <Image
+                    <img
                       src={img}
                       alt={`${product.name} ${idx + 1}`}
-                      fill
-                      className="object-cover"
+                      className="w-full h-full object-cover"
                     />
+                    <span className="absolute bottom-1 right-1 bg-gray-800 text-white text-xs px-1.5 py-0.5 rounded text-semibold">
+                      {idx + 1}
+                    </span>
                   </button>
                 ))}
               </div>

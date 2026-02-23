@@ -18,8 +18,8 @@ export default function ImageUpload({ onImagesChange, maxImages = 4 }: ImageUplo
       const reader = new FileReader();
       reader.onload = () => {
         const result = reader.result as string;
-        // For now, we'll use a simple path - in production, you'd upload to cloud storage
-        resolve(`/products/${file.name}`);
+        // Store as base64 data URL for display
+        resolve(result);
       };
       reader.onerror = reject;
       reader.readAsDataURL(file);
@@ -126,38 +126,37 @@ export default function ImageUpload({ onImagesChange, maxImages = 4 }: ImageUplo
         </div>
       )}
 
-      {/* Image Preview Grid */}
+      {/* Image Preview Grid - Uniform Frame Sizes */}
       {images.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {images.map((image, index) => (
-            <div key={index} className="relative group rounded-lg overflow-hidden border border-gray-200 bg-gray-100 aspect-square">
-              {image.startsWith("data:") ? (
-                <img
-                  src={image}
-                  alt={`Preview ${index + 1}`}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400 text-xs p-2 text-center break-words">
-                  Image {index + 1}
-                </div>
-              )}
+            <div key={index} className="relative group rounded-lg overflow-hidden border-2 border-gray-300 bg-gray-100 aspect-square shadow-md hover:shadow-lg transition">
+              <img
+                src={image}
+                alt={`Preview ${index + 1}`}
+                className="w-full h-full object-cover"
+              />
 
               {/* Remove Button */}
               <button
                 type="button"
                 onClick={() => removeImage(index)}
-                className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                className="absolute top-2 right-2 bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition font-bold text-xl hover:bg-red-700"
               >
                 ✕
               </button>
 
               {/* Main Image Badge */}
               {index === 0 && (
-                <div className="absolute bottom-1 left-1 bg-blue-600 text-white text-xs px-2 py-1 rounded">
+                <div className="absolute bottom-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded font-semibold">
                   Main
                 </div>
               )}
+              
+              {/* Image Order Badge */}
+              <div className="absolute top-2 left-2 bg-gray-800 text-white text-xs px-2 py-1 rounded font-semibold">
+                {index + 1}
+              </div>
             </div>
           ))}
         </div>

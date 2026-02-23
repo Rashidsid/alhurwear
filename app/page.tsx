@@ -335,18 +335,16 @@ export default function Home() {
                   transition={{ duration: 0.5 }}
                   className="group rounded-lg overflow-hidden border border-slate-200 hover:shadow-lg transition"
                 >
-                  {/* Product Image */}
-                  <div className="relative overflow-hidden bg-slate-100 h-64">
+                  {/* Product Image - Uniform Frame Size */}
+                  <div className="relative overflow-hidden bg-gray-200 aspect-square w-full">
                     {product.images && product.images.length > 0 ? (
-                      <Image
+                      <img
                         src={product.images[0]}
                         alt={product.name}
-                        width={400}
-                        height={400}
                         className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-slate-400">
+                      <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm font-medium">
                         No Image
                       </div>
                     )}

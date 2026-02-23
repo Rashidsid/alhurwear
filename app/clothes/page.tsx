@@ -87,14 +87,13 @@ export default function Clothes() {
               >
                 <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-gray-200">
                   {p.images && p.images.length > 0 ? (
-                    <Image
+                    <img
                       src={p.images[0]}
                       alt={p.name}
-                      fill
-                      className="object-cover hover:scale-105 transition duration-300"
+                      className="w-full h-full object-cover hover:scale-105 transition duration-300"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-300 text-gray-600">
+                    <div className="w-full h-full flex items-center justify-center bg-gray-300 text-gray-600 text-sm font-medium">
                       No Image
                     </div>
                   )}
